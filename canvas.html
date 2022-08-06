@@ -6,12 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>画板</title>
     <style>
-        
+    
+    body {
+    overflow: hidden;
+    }
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         position: relative;
+        
     }
 
     #canvas {
@@ -24,30 +28,60 @@
 <body>
     <canvas id = "canvas" width = "100" height="100">
     </canvas>
+    
     <script>
-        canvas.onmousemove = (e) => {
             let canvas = document.getElementById("canvas")
             canvas.width = document.documentElement.clientWidth
             canvas.height = document.documentElement.clientHeight
             let ctx = canvas.getContext("2d")
+            ctx.fillStyle = "black"
+            ctx.strokeStyle = 'none'
+            ctx.lineWidth = 20
+            ctx.lineCap = "round"
             let draw = false
-            ctx.fillStyle = "blue"
+            
+            let isTouchDevice = 'ontouchstart' in document.documentElement
 
-            canvas.onmousedown = () => {
-                draw = true                   //标记按下鼠标
-            }
 
-            canvas.onmousemove = (e) => {
-                if (draw === true){
-                ctx.fillRect(e.clientX - 5, e.clientY, 10, 10)
+            
+            function drawLine (x1, y1, x2, y2) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
                 }
-            }
 
-            canvas.onmouseup = () => {
+            if (isTouchDevice === true) {
+                canvas.ontouchstart = (e) => {
+                draw = true;
+                // console.log (draw)
+                lastCoord = [e.touches[0].clientX, e.touches[0].clientY]
+                // console.log(lastCoord)
+                }
+                canvas.ontouchmove = (e) => {
+                if (draw === true){
+                drawLine(lastCoord[0], lastCoord[1], e.touches[0].clientX, e.touches[0].clientY)     //调用drawLine
+                lastCoord = [e.touches[0].clientX, e.touches[0].clientY]       //实时更新上一个坐标
+                }
+                }
+            } else {
+                canvas.onmousedown = (e) => {
+                draw = true                   //标记按下鼠标
+                lastCoord = [e.clientX, e.clientY]   //记录第一次按下鼠标的坐标
+                }
+
+                canvas.onmousemove = (e) => {
+                if (draw === true){
+                drawLine(lastCoord[0], lastCoord[1], e.clientX, e.clientY)     //调用drawLine
+                lastCoord = [e.clientX, e.clientY]       //实时更新上一个坐标
+                }
+                }
+
+                canvas.onmouseup = () => {
                 draw = false                //标记释放鼠标
-            }
+                }
 
-        }
+            }
     </script>
 </body>
 </html>
